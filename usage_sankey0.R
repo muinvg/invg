@@ -27,7 +27,7 @@ S2e <- function(S){
 		if(is.null(eS)){
 			eS <- data.frame(V1=I(aS[ran]), V2=I(aS[ran+1]) )
 		}else{
-			eS <- rbind(eS,data.frame(V1=aS[ran], V2=aS[ran+1] ) )
+			eS <- rbind(eS,data.frame(V1=I(aS[ran]), V2=I(aS[ran+1]) ) )
 		}
 	
 		
