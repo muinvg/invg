@@ -4,7 +4,7 @@
 	
 	M = dim(dQ)[2]
 	
-	#�P�{���擾
+	#１倍を取得
 	Hth1 <- mean( subset(dQ, TPNameC=="Ref")[, 26], na.rm=T)
 	Lth1 <- mean( subset(dQ, TPNameC=="Ref")[, 27], na.rm=T)
 	
@@ -12,7 +12,7 @@
 	dQ.Noise <- subset(dQ, TPNameC=="Noise")
 	dQ.NoTP <- subset(dQ, TPNameC=="NoTP")
 	
-	#3�{�t�߂𔲂��o��
+	#3倍付近を抜き出し
 	dQ.H <- subset(dQ.Simu, ( (Rlim-0.5)*Hth1 < dQ.Simu[,26] )&
 			( (Rlim+0.5)*Hth1 > dQ.Simu[,26] ) )
 	
@@ -24,7 +24,7 @@
 	dTh <- dQ[1:15 , ]
 	dTh[] <- NA
 	
-	#F3���Z�o�i�Z�o���14����
+	#F3を算出（算出基準が14個ある
 	for(jj in 26:M){
 		dTh[1,jj] <- mean(dQ.Noise[, jj], na.rm=T)
 		
@@ -62,11 +62,13 @@
 	
 	wNoTP <- which(dQt$TPNameC=="NoTP")
 	
-	Flist <- levels(as.factor(subset(dQt, TPName!="NoTP")$TPNameC)) # FE, SU�Ƃ�������ނ��邩
+	Flist <- levels(as.factor(subset(dQt, TPName!="NoTP")$TPNameC)) # FE, SUとかが何種類あるか
 	for(ff in seq(Flist)){
-		tplist <-  levels(as.factor(subset(dQt, TPNameC==Flist[ff])$TPName)) # FE,�쒆�ł���ɉ���ނ��邩
-		szlist <- levels(as.factor(subset(dQt, TPNameC==Flist[ff])$TPNameN)) # FE,�쒆�ł���ɉ���ނ��邩 �T�C�Y
-		
+		tplist <-  levels(as.factor(subset(dQt, TPNameC==Flist[ff])$TPName)) # FE,野中でさらに何種類あるか
+		szlist <- levels(as.factor(subset(dQt, TPNameC==Flist[ff])$TPNameN)) # FE,野中でさらに何種類あるか サイズ
+		#as.numericしたほうがよさそう、ループの順番が変、dRc2はFlistの要素ごとに地学なるので分けるべき
+
+
 		#wFe <- which(dQt$TPNameC=="Fe")
 		#wSUS <- which(dQt$TPNameC=="SUS")
 		#wBRASS <- which(dQt$TPNameC=="BRASS")
