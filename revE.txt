@@ -1,0 +1,95 @@
+ <- function(res, Rlim){
+	
+	dQ <- res$dQ
+	
+	M = dim(dQ)[2]
+	
+	#‚P”{‚ðŽæ“¾
+	Hth1 <- mean( subset(dQ, TPNameC=="Ref")[, 26], na.rm=T)
+	Lth1 <- mean( subset(dQ, TPNameC=="Ref")[, 27], na.rm=T)
+	
+	dQ.Simu <- subset(dQ, TPNameC=="SimuNoTP")
+	dQ.Noise <- subset(dQ, TPNameC=="Noise")
+	dQ.NoTP <- subset(dQ, TPNameC=="NoTP")
+	
+	#3”{•t‹ß‚ð”²‚«o‚µ
+	dQ.H <- subset(dQ.Simu, ( (Rlim-0.5)*Hth1 < dQ.Simu[,26] )&
+			( (Rlim+0.5)*Hth1 > dQ.Simu[,26] ) )
+	
+	dQ.L <- subset(dQ.Simu, ( (Rlim-0.5)*Lth1 < dQ.Simu[,27] )&
+			( (Rlim+0.5)*Lth1 > dQ.Simu[,27] ) )
+	
+	delta = 1e-6
+	
+	dTh <- dQ[1:15 , ]
+	dTh[] <- NA
+	
+	#F3‚ðŽZoiŽZoŠî€‚ª14ŒÂ‚ ‚é
+	for(jj in 26:M){
+		dTh[1,jj] <- mean(dQ.Noise[, jj], na.rm=T)
+		
+		dTh[ 2,jj] <-      max(dQ.H[, jj], na.rm=T)
+		dTh[ 3,jj] <- quantile(dQ.H[, jj], prob=0.75, na.rm=T)
+		dTh[ 4,jj] <-     mean(dQ.H[, jj], na.rm=T)
+		dTh[ 5,jj] <- quantile(dQ.H[, jj], prob=0.25, na.rm=T)
+		dTh[ 6,jj] <-      min(dQ.H[, jj], na.rm=T)
+		
+		dTh[ 7,jj] <-      max(dQ.L[, jj], na.rm=T)
+		dTh[ 8,jj] <- quantile(dQ.L[, jj], prob=0.75, na.rm=T)
+		dTh[ 9,jj] <-     mean(dQ.L[, jj], na.rm=T)
+		dTh[10,jj] <- quantile(dQ.L[, jj], prob=0.25, na.rm=T)
+		dTh[11,jj] <-      min(dQ.L[, jj], na.rm=T)
+		
+		dTh[12,jj] <- min(dQ.NoTP[, jj], na.rm=T)*(1+delta)
+		dTh[13,jj] <- min(dQ.NoTP[, jj], na.rm=T)*(1-delta)
+		dTh[14,jj] <- max(dQ.NoTP[, jj], na.rm=T)*(1+delta)
+		dTh[15,jj] <- max(dQ.NoTP[, jj], na.rm=T)*(1-delta)
+		
+	}
+	rownames(dTh) <- c("Noise", "maxH3", "p75H3", "meanH3", "p25H3", "minH3",
+				"maxL3", "p75L3", "meanL3", "p25L3", "minL3", 
+				"min1NoTP", "min2NoTP", "max1NoTP", "max2NoTP")
+	
+	rm(dQ.Noise)
+	rm(dQ.NoTP)
+	rm(dQ.Simu)
+	
+	dRc1 <- dTh
+	dRc1[] = -Inf
+	dRc2 <- dRc1
+	
+	dQt <- subset(dQ, (TPNameC!="SimuNoTP")&(TPNameC!="SimuNoTPt") )
+	
+	wNoTP <- which(dQt$TPNameC=="NoTP")
+	
+	Flist <- levels(as.factor(subset(dQt, TPName!="NoTP")$TPNameC)) # FE, SU‚Æ‚©‚ª‰½Ží—Þ‚ ‚é‚©
+	for(ff in seq(Flist)){
+		tplist <-  levels(as.factor(subset(dQt, TPNameC==Flist[ff])$TPName)) # FE,–ì’†‚Å‚³‚ç‚É‰½Ží—Þ‚ ‚é‚©
+		szlist <- levels(as.factor(subset(dQt, TPNameC==Flist[ff])$TPNameN)) # FE,–ì’†‚Å‚³‚ç‚É‰½Ží—Þ‚ ‚é‚© ƒTƒCƒY
+		
+		#wFe <- which(dQt$TPNameC=="Fe")
+		#wSUS <- which(dQt$TPNameC=="SUS")
+		#wBRASS <- which(dQt$TPNameC=="BRASS")
+		
+		for( ii in 2:15){
+			for(jj in 26:M){
+				Nok <- length(which( ( ( dQt[wNoTP,jj] - dTh[1,jj]) *( dQt[wNoTP,jj] - dTh[ii,jj] ) )<=0 ))
+				dRc1[ii,jj] <- Nok / length(wNoTP)
+				
+				dRc2[ii,jj] <- Inf
+				for( tt in rev(order(szlist))){
+					w2 <- which(dQt$TPName==tplist[tt])
+					Nok <- length(which( ( ( dQt[w2,jj] - dTh[1,jj]) *( dQt[w2,jj] - dTh[ii,jj] ) )>0 ))
+					
+					if( Nok == length(w2) ){
+						dRc2[ii,jj] = szlist[tt]
+					}else{
+						break()
+					}
+				}
+			}	
+			
+		}
+	}
+	return(list(dRc1=dRc1,dRc2=dRc2,dTh=dTh))
+}
