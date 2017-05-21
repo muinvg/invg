@@ -1,0 +1,17 @@
+s=readLines(con = "jsai2017.txt")
+# s0 = readLines(con="https://kaigi.org/jsai/webprogram/2017/paper_list.html")
+
+
+g1A1 = grep(pattern = "<li>1A1.* <a href=.paper-[0-9][0-9][0-9]*",x=s,value = TRUE)
+g1A = grep(pattern = "<li>1A[1-9].* <a href=.paper-[0-9][0-9][0-9]*",x=s,value = TRUE)
+
+g2B = grep(pattern = "<li>2B[1-9].* <a href=.paper-[0-9][0-9][0-9]*",x=s,value = TRUE)
+g2E = grep(pattern = "<li>2E[1-9].* <a href=.paper-[0-9][0-9][0-9]*",x=s,value = TRUE)
+g2I = grep(pattern = "<li>2I[1-9].* <a href=.paper-[0-9][0-9][0-9]*",x=s,value = TRUE)
+g3M = grep(pattern = "<li>3M[1-9].* <a href=.paper-[0-9][0-9][0-9]*",x=s,value = TRUE)
+g3Q = grep(pattern = "<li>3Q[1-9].* <a href=.paper-[0-9][0-9][0-9]*",x=s,value = TRUE)
+
+g3Q = grep(pattern = "<li>3Q[1-9].* <a href=.paper-[0-9][0-9][0-9]*",x=s,value = TRUE)
+
+writeLines(con = "jsai2017_a.txt",text = g1A)
+writeLines(con = "jsai2017_x.txt",text = c(g1A,g2B,g2E,g2I,g3M,g3Q))
