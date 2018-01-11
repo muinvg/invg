@@ -1,0 +1,99 @@
+
+
+X = c(
+    rpois(40, lambda=100),
+    rpois(40, lambda=150),
+    rpois(40, lambda=60),
+    rpois(40, lambda=1000)
+)
+
+set.seed(1)
+N <- 1000
+true_lambda <- c(5,15)
+true_s <- rbinom(N,1,0.5)
+x <-rpois(N,true_lambda[true_s+1])
+
+true_s
+
+hist(x,breaks = "scott",main = "",xlab = "")
+
+
+
+res = VBPoissonMix(x,a,b,alpha,K,lambda_ini,pi_ini,tol=1e-6,maxit=1000)
+
+est1 <-VBPoissonMix(x = x,a = 0.001,b = 0.001,alpha = c(1,1),K = 2,
+                    lambda_ini = c(3,14),pi_ini = c(0.5,0.5))
+
+# 
+# 
+# > est1$iter
+# [1] 27
+# > est1$lambda
+# [1]  5.016922 14.953575
+# > est1$pi
+# [1] 0.5331708 0.4668292
+# 
+# sn
+# 
+
+library(tidyverse)
+checkdf <-data.frame(true_s,probability=est1$s[,1])
+
+p1 <-ggplot(checkdf,aes(x=probability))+
+    geom_histogram(colour="black", fill="white", bins=10)+
+    facet_grid(true_s~.)
+
+print(p1)
+
+h1<-hist(x,plot = FALSE,breaks = "scott")
+
+df1 <-data.frame(x=x,s=est1$s[,1]) %>% 
+    mutate(cut=cut(x,h1$breaks,include.lowest=TRUE,right=FALSE)) %>% 
+    group_by(cut) %>% 
+    summarise(count=sum(x),s=mean(s)) %>% 
+    mutate(mids=h1$mids)
+
+p2 <-ggplot(df1,aes(x=mids,y=count,fill=s))+
+    geom_col(width = h1$breaks[2]-h1$breaks[1],colour="black")+
+    scale_fill_gradient2(low = "cornflowerblue",mid = "white",high = "orange",midpoint = 0.5)+
+    xlab("")
+
+print(p2)
+
+#x: 観測されたデータ
+#a,b: ガンマ分布のパラメータ
+#alpha: ディリクレ分布のパラメータ
+#lambda_ini: ポアソン分布のパラメータの初期値
+#pi_ini: カテゴリカル分布のパラメータの初期値
+VBPoissonMix <- function(x,a,b,alpha,K,lambda_ini,pi_ini,tol=1e-6,maxit=1000){
+    N<-length(x)
+    s <- tmp <- matrix(NA,N,K)
+    lambda_old <- lambda_ini
+    pi_old <- pi_ini
+    loglambda <- log(lambda_ini)
+    logpi_old <- log(pi_ini)
+    for(k in 1:K){
+        tmp[,k] <- exp(x*loglambda[k]-lambda_old[k]+logpi_old[k])
+    }
+    den <-apply(tmp,1,sum)
+    s<-sweep(tmp,1,den,"/")
+    for(i in 1:maxit){
+        ahat <- apply(s*x,2,sum) + a
+        bhat <- apply(s,2,sum) + b
+        alphahat <- apply(s,2,sum) + alpha
+        lambda_new <- ahat/bhat
+        loglambda <- digamma(ahat)-log(bhat)
+        logpi_new <- digamma(alphahat)-digamma(sum(alphahat))
+        for(k in 1:K){
+            tmp[,k] <- exp(x*loglambda[k]-lambda_new[k]+logpi_new[k])
+        }
+        den <-apply(tmp,1,sum)
+        s<-sweep(tmp,1,den,"/")
+        if(all(abs(lambda_old-lambda_new)<tol) & all(abs(logpi_old-logpi_new)<tol)){
+            break
+        }
+        lambda_old <- lambda_new
+        logpi_old <- logpi_new
+    }
+    list(lambda=lambda_new,pi=alphahat/sum(alphahat),s=s,iter=i)
+}
