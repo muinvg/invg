@@ -17,7 +17,8 @@ source("./admm.R")
 # データ準備
 # df = read.csv("model2_sol.csv",header = TRUE,stringsAsFactors = FALSE)
 # df = read.csv("modelX_with_forces_1_0_-1_1_sol.csv",header = TRUE,stringsAsFactors = FALSE)
-df = read.csv("model2_g_1_0_-1_1_sol.csv",header = TRUE,stringsAsFactors = FALSE)
+# df = read.csv("model2_g_1_0_-1_1_sol.csv",header = TRUE,stringsAsFactors = FALSE)
+df = read.csv("model2_gtr_1_0_-1_1_sol.csv",header = TRUE,stringsAsFactors = FALSE)
 
 df %>% head()
 # dn();df %>% ggplot(aes(x=x1,y=x2))+geom_point()
@@ -31,13 +32,35 @@ dt = t0[2]-t0[1]
 # y0 = df$x2/2.5
 # x0 = 2*(df$x1-min(df$x1))/(max(df$x1)-min(df$x1)) - 1
 # y0 = 2*(df$x2-min(df$x2))/(max(df$x2)-min(df$x2)) - 1
-x0 = (df$x1-min(df$x1))/(max(df$x1)-min(df$x1)) 
-y0 = (df$x2-min(df$x2))/(max(df$x2)-min(df$x2)) 
+# x0 = 1.5*(df$x1-min(df$x1))/(max(df$x1)-min(df$x1)) -0.75
+# y0 = 1.5*(df$x2-min(df$x2))/(max(df$x2)-min(df$x2)) -0.75
+# x0 = (df$x1-min(df$x1))/(max(df$x1)-min(df$x1))
+# y0 = (df$x2-min(df$x2))/(max(df$x2)-min(df$x2))
+# x0 = 0.6*(df$x1-min(df$x1))/(max(df$x1)-min(df$x1)) + 0.2
+# y0 = 0.6*(df$x2-min(df$x2))/(max(df$x2)-min(df$x2)) + 0.2
 
-const = 2*(0-min(df$x1))/(max(df$x1)-min(df$x1)) - 1
-gain1 = 2/(max(df$x1)-min(df$x1)) 
-gain2 = 2/(max(df$x2)-min(df$x2)) 
+# const1 = 0.6*(0-min(df$x1))/(max(df$x1)-min(df$x1)) + 0.2
+# const2 = 0.6*(0-min(df$x2))/(max(df$x2)-min(df$x2)) + 0.2
+# gain1 = 0.6/(max(df$x1)-min(df$x1)) 
+# gain2 = 0.6/(max(df$x2)-min(df$x2)) 
+# const1 = 1.6*(0-min(df$x1))/(max(df$x1)-min(df$x1)) - 0.8
+# const2 = 1.6*(0-min(df$x2))/(max(df$x2)-min(df$x2)) - 0.8
+# gain1 = 1.6/(max(df$x1)-min(df$x1)) 
+# gain2 = 1.6/(max(df$x1)-min(df$x1)) 
+# const1 = 0
+# const2 = 0
+# gain1 = 0.8/max(abs(df$x1))
+# gain2 = 0.8/max(abs(df$x2))
+const1 = 0
+const2 = 0
+gain1 = 1/30
+gain2 = 1/4
 
+x0 = gain1 * df$x1 + const1
+y0 = gain2 * df$x2 + const2
+
+H1 = df$H[1]
+tr1 = df$g11[1]/(gain1^2) + df$g22[1]/(gain2^2)
 
 
 N = length(x0)
@@ -63,19 +86,31 @@ Tx = dim(X)[1]
 
 # 基底関数の準備
 
+phi = phi0
+phid = phi0d
+phi_name = phi0_name
+# phi = phiA
+# phid = phiAd
+# phi_name = phiA_name
 # phi = phiC
 # phid = phiCd
 # phi_name = phiC_name
-phi = bnst[[2]]
-phid = bnstd[[2]]
-phi_name = bnst_name[[2]]
+# phi = bnst[[4]]
+# phid = bnstd[[4]]
+# phi_name = bnst_name[[4]]
+# phi = nlgdr
+# phid = nlgdrd
+# phi_name = nlgdr_name
 
 psi = phiB
 psid = phiBd
 psi_name = phiB_name
+# psi = phiD
+# psid = phiDd
+# psi_name = phiD_name
 
-Mm = 9 #6 10 15 21 28
-Mp = 2 # 2 5 9 14
+Mm = 2 #6 10 15 21 28
+Mp = 0 # 2 5 9 14
 n = 2
 
 na = n*(n+1)*Mm/2
@@ -130,11 +165,19 @@ if(Mp>0){
 
 #二次元専用
 B_list = as.list(1:Mm)
+B2_list = as.list(1:Mm)
 for(kk in 1:Mm){
   B_list[[kk]] = matrix(0,ncol=na+nb,nrow=3)
   B_list[[kk]][1,idx[1,1,kk]] = 1
   B_list[[kk]][2,idx[1,2,kk]] = 1
   B_list[[kk]][3,idx[2,2,kk]] = 1
+  
+  B2_list[[kk]] = array(0, dim = c(n, n, na+nb))
+  B2_list[[kk]][1,1,idx[1,1,kk]] = 1
+  B2_list[[kk]][1,2,idx[1,2,kk]] = 1
+  B2_list[[kk]][2,1,idx[2,1,kk]] = 1
+  B2_list[[kk]][2,2,idx[2,2,kk]] = 1
+  
 }
 
 
@@ -161,6 +204,7 @@ if(Mp>0){
     }
   }
 }
+
 
 # 係数行列作成
 
@@ -215,10 +259,10 @@ if(Mp>0){
 
 P = Pa + Pv + Pf
 
-# trace = 1, trace
+# trace = fix
 PT1 = matrix(0,nrow=1, ncol=na+nb)
 KT = matrix(0,nrow=Tx, ncol=na+nb)
-vT1 = matrix(1,nrow=1, ncol=1)
+vT1 = matrix(tr1 ,nrow=1, ncol=1)
 for(tt in 1:Tx){
   if(tt==1){
     for(ii in 1:n){
@@ -261,10 +305,10 @@ for(tt in 1:(Tx-1)){
   }
 }
 
-# H = 1
+# H = Fix
 PH1 = matrix(0,nrow=1, ncol=na+nb)
 KH = matrix(0,nrow=Tx, ncol=na+nb)
-vH1 = matrix(1,nrow=1, ncol=1)
+vH1 = matrix( H1 , nrow=1, ncol=1)
 for(tt in 1:Tx){
   if(tt==1){
     for(ii in 1:n){
@@ -400,6 +444,40 @@ adm3 = admm_with_psd_mode(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 1
 c_16f = adm3$x #admm PSD T
 
 
+adm4 = admm_with_psd_mode_l2(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 1000, rho = 0.1, rho_s = 0.1, scale_mode = "transform")
+c_17a = adm4$x #admm PSD T
+adm4 = admm_with_psd_mode_l2(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 1000, rho = 1.0, rho_s = 1.0, scale_mode = "transform")
+c_17b = adm4$x #admm PSD T
+adm4 = admm_with_psd_mode_l2(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 1000, rho = 10, rho_s = 10, scale_mode = "transform")
+c_17c = adm4$x #admm PSD T
+
+adm4 = admm_with_psd_mode_l2(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 1000, rho = 0.1, rho_s = 0.1, scale_mode = "normalize")
+c_17d = adm4$x #admm PSD T
+adm4 = admm_with_psd_mode_l2(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 1000, rho = 1.0, rho_s = 1.0, scale_mode = "normalize")
+c_17e = adm4$x #admm PSD T
+adm4 = admm_with_psd_mode_l2(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 1000, rho = 10, rho_s = 10, scale_mode = "normalize")
+c_17f = adm4$x #admm PSD T
+
+adm4 = admm_with_psd_mode_l2(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 1000, rho = 0.1, rho_s = 0.1, scale_mode = "none")
+c_17g = adm4$x #admm PSD T
+adm4 = admm_with_psd_mode_l2(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 1000, rho = 1.0, rho_s = 1.0, scale_mode = "none")
+c_17h = adm4$x #admm PSD T
+adm4 = admm_with_psd_mode_l2(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 1000, rho = 10, rho_s = 10, scale_mode = "none")
+c_17i = adm4$x #admm PSD T
+
+eta13T = sqrt(sum((PT1 %*% c_13 - vT1)^2))
+eta13H = sqrt(sum((PH1 %*% c_13 - vH1)^2))
+
+# c_18a = solve_admm_3dB(P=P, Q=PT1, r=vT1, B_list=B2_list, eps=eps13T, eta=eta13T, scale_mode = "none",max_iter = 2000)$x
+# c_18b = solve_admm_3dB(P=P, Q=PT1, r=vT1, B_list=B2_list, eps=eps13T, eta=eta13T, scale_mode = "l2",max_iter = 2000)$x
+# c_18c = solve_admm_3dB(P=P, Q=PT1, r=vT1, B_list=B2_list, eps=eps13T, eta=eta13T, scale_mode = "maxabs",max_iter = 2000)$x
+# c_18d = solve_admm_3dB(P=P, Q=PT1, r=vT1, B_list=B2_list, eps=eps13T, eta=eta13T, scale_mode = "whiten",max_iter = 2000)$x
+c_18a = admm_with_psd_mode_02(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, scale_mode = "normalize", adapt_method = "residual")$x
+c_18b = admm_with_psd_mode_02(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, scale_mode = "transform", adapt_method = "residual")$x
+c_18c = admm_with_psd_mode_02(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, scale_mode = "none", adapt_method = "residual")$x
+c_18d = admm_with_psd_mode_02(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, scale_mode = "normalize", adapt_method = "adaptive")$x
+c_18e = admm_with_psd_mode_02(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, scale_mode = "transform", adapt_method = "adaptive")$x
+c_18f = admm_with_psd_mode_02(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, scale_mode = "none", adapt_method = "adaptive")$x
 
 
 
@@ -425,18 +503,33 @@ dC = rbind(
   data.frame(solid=19,basis=coef_name,idx=1:(na+nb),coef=c_14d[1:(na+nb)],method="ADMM0.1",st="H"),
   data.frame(solid=20,basis=coef_name,idx=1:(na+nb),coef=c_14e[1:(na+nb)],method="ADMM1.0",st="H"),
   data.frame(solid=21,basis=coef_name,idx=1:(na+nb),coef=c_14f[1:(na+nb)],method="ADMM10",st="H"),
-  data.frame(solid=22,basis=coef_name,idx=1:(na+nb),coef=c_15a[1:(na+nb)],method="ADMMPSD0.1",st="T"),
-  data.frame(solid=23,basis=coef_name,idx=1:(na+nb),coef=c_15b[1:(na+nb)],method="ADMMPSD1.0",st="T"),
-  data.frame(solid=24,basis=coef_name,idx=1:(na+nb),coef=c_15c[1:(na+nb)],method="ADMMPSD10",st="T"),
-  data.frame(solid=25,basis=coef_name,idx=1:(na+nb),coef=c_15d[1:(na+nb)],method="ADMMPSD0.1",st="H"),
-  data.frame(solid=26,basis=coef_name,idx=1:(na+nb),coef=c_15e[1:(na+nb)],method="ADMMPSD1.0",st="H"),
-  data.frame(solid=27,basis=coef_name,idx=1:(na+nb),coef=c_15f[1:(na+nb)],method="ADMMPSD10",st="H"),
+  data.frame(solid=22,basis=coef_name,idx=1:(na+nb),coef=c_15a[1:(na+nb)],method="ADMMPSD-0.1",st="T"),
+  data.frame(solid=23,basis=coef_name,idx=1:(na+nb),coef=c_15b[1:(na+nb)],method="ADMMPSD-1.0",st="T"),
+  data.frame(solid=24,basis=coef_name,idx=1:(na+nb),coef=c_15c[1:(na+nb)],method="ADMMPSD-10",st="T"),
+  data.frame(solid=25,basis=coef_name,idx=1:(na+nb),coef=c_15d[1:(na+nb)],method="ADMMPSD-0.1",st="H"),
+  data.frame(solid=26,basis=coef_name,idx=1:(na+nb),coef=c_15e[1:(na+nb)],method="ADMMPSD-1.0",st="H"),
+  data.frame(solid=27,basis=coef_name,idx=1:(na+nb),coef=c_15f[1:(na+nb)],method="ADMMPSD-10",st="H"),
   data.frame(solid=28,basis=coef_name,idx=1:(na+nb),coef=c_16a[1:(na+nb)],method="ADMMPSDt0.1",st="T"),
   data.frame(solid=29,basis=coef_name,idx=1:(na+nb),coef=c_16b[1:(na+nb)],method="ADMMPSDt1.0",st="T"),
   data.frame(solid=30,basis=coef_name,idx=1:(na+nb),coef=c_16c[1:(na+nb)],method="ADMMPSDt10",st="T"),
   data.frame(solid=31,basis=coef_name,idx=1:(na+nb),coef=c_16d[1:(na+nb)],method="ADMMPSDn0.1",st="T"),
   data.frame(solid=32,basis=coef_name,idx=1:(na+nb),coef=c_16e[1:(na+nb)],method="ADMMPSDn1.0",st="T"),
-  data.frame(solid=33,basis=coef_name,idx=1:(na+nb),coef=c_16f[1:(na+nb)],method="ADMMPSDn10",st="T")
+  data.frame(solid=33,basis=coef_name,idx=1:(na+nb),coef=c_16f[1:(na+nb)],method="ADMMPSDn10",st="T"),
+  data.frame(solid=34,basis=coef_name,idx=1:(na+nb),coef=c_17a[1:(na+nb)],method="ADMMPSDL2t0.1",st="T"),
+  data.frame(solid=35,basis=coef_name,idx=1:(na+nb),coef=c_17b[1:(na+nb)],method="ADMMPSDL2t1.0",st="T"),
+  data.frame(solid=36,basis=coef_name,idx=1:(na+nb),coef=c_17c[1:(na+nb)],method="ADMMPSDL2t10",st="T"),
+  data.frame(solid=37,basis=coef_name,idx=1:(na+nb),coef=c_17d[1:(na+nb)],method="ADMMPSDL2n0.1",st="T"),
+  data.frame(solid=38,basis=coef_name,idx=1:(na+nb),coef=c_17e[1:(na+nb)],method="ADMMPSDL2n1.0",st="T"),
+  data.frame(solid=39,basis=coef_name,idx=1:(na+nb),coef=c_17f[1:(na+nb)],method="ADMMPSDL2n10",st="T"),
+  data.frame(solid=40,basis=coef_name,idx=1:(na+nb),coef=c_17g[1:(na+nb)],method="ADMMPSDL2-0.1",st="T"),
+  data.frame(solid=41,basis=coef_name,idx=1:(na+nb),coef=c_17h[1:(na+nb)],method="ADMMPSDL2-1.0",st="T"),
+  data.frame(solid=42,basis=coef_name,idx=1:(na+nb),coef=c_17i[1:(na+nb)],method="ADMMPSDL2-10",st="T"),
+  data.frame(solid=43,basis=coef_name,idx=1:(na+nb),coef=c_18a[1:(na+nb)],method="ADMMPSDnR",st="T"),
+  data.frame(solid=44,basis=coef_name,idx=1:(na+nb),coef=c_18b[1:(na+nb)],method="ADMMPSDtR",st="T"),
+  data.frame(solid=45,basis=coef_name,idx=1:(na+nb),coef=c_18c[1:(na+nb)],method="ADMMPSD-R",st="T"),
+  data.frame(solid=46,basis=coef_name,idx=1:(na+nb),coef=c_18d[1:(na+nb)],method="ADMMPSDnA",st="T"),
+  data.frame(solid=47,basis=coef_name,idx=1:(na+nb),coef=c_18e[1:(na+nb)],method="ADMMPSDtA",st="T"),
+  data.frame(solid=48,basis=coef_name,idx=1:(na+nb),coef=c_18f[1:(na+nb)],method="ADMMPSD-A",st="T")
 ) %>% group_by(method,st) %>% mutate(scale=max(abs(coef)),pol=sign(mean(max(coef)+min(coef)))) %>% ungroup()
 
 dn();dC %>% ggplot_bw(aes(x=idx,y=coef/scale/pol,shape=st,colour = st,group = paste(method,st)))+
@@ -480,17 +573,17 @@ for(cc in sollist){
   
   lam1 = (1:Tx)*0
   lam2 = (1:Tx)*0
+  g11 = (1:Tx)*0
+  g12 = (1:Tx)*0
+  g22 = (1:Tx)*0
   for(tt in 1:Tx){
-    g = matrix(c(0,0,0,0),nrow=2)
     for(ll in 1:Mm){
       philt = gphi[ll,tt]
-      g11 = c_n[ idx[1,1,ll] ] * philt
-      g21 = c_n[ idx[2,1,ll] ] * philt
-      g12 = g21
-      g22 = c_n[ idx[2,2,ll] ] * philt
-      
-      g = g + matrix(c(g11,g21,g12,g22),nrow=2)
+      g11[tt] = g11[tt] + c_n[ idx[1,1,ll] ] * philt
+      g12[tt] = g12[tt] + c_n[ idx[1,2,ll] ] * philt
+      g22[tt] = g22[tt] + c_n[ idx[2,2,ll] ] * philt
     }
+    g = matrix(c(g11[tt],g12[tt],g12[tt],g22[tt]),nrow=2)
     eg = eigen(g,symmetric = TRUE, only.values = TRUE)
     lam1[tt] = max(eg$values)
     lam2[tt] = min(eg$values)
@@ -498,7 +591,7 @@ for(cc in sollist){
   
   dG0 = data.frame(t = t,trG = KT%*%c_n[1:(na+nb)] ,H = KH%*%c_n[1:(na+nb)] ,
                    e1 = P[1:Tx,]%*%c_n[1:(na+nb)] , e2 = P[Tx+1:Tx,]%*%c_n[1:(na+nb)] ,
-                   lam1 = lam1, lam2=lam2,
+                   lam1 = lam1, lam2=lam2,g11=g11,g12=g12,g22=g22,
                    method=method_n,st=st_n)
   
   dG = rbind(dG,dG0)
@@ -510,9 +603,36 @@ dG2 = dG %>% group_by(method,st) %>%
   ungroup() %>% arrange(-slam1-slam2,e_r) 
 
 print(dG2)
-
+dG2 %>% view()
 dn();dC %>% inner_join(y=dG2 %>% filter(slam1+slam2 ==2),by=c("method","st")) %>% 
   ggplot_bw(aes(y=basis,x=coef/scale/pol,shape=st,colour = st,group = paste(method,st)))+
-  geom_point(alpha=0.5)+geom_path()+facet_wrap(~method,nrow=1)+scale_y_discrete(limits = coef_name)
+  geom_point(alpha=0.5)+geom_path()+facet_wrap(~method,nrow=1)+scale_y_discrete(limits = coef_name)+
+  geom_vline(xintercept = 0,linetype = "dotted")
 
 # dn();colSums(P^2) %>% plot()
+
+
+dn();  ggplot_bw()+geom_point(
+  data= dG %>% inner_join(y=dG2 %>% filter(slam1+slam2 ==2),by=c("method","st")) %>% 
+    filter((1000*t) %in% seq(from=1,to=20000,by=100)),
+  aes(x=t,y=g11,shape=st,colour = st,group = paste(method,st)))+geom_path()+facet_wrap(~method,scale="free_y")+
+  geom_line(mapping = aes(x=t,y=g11/(gain1*gain1)),data = df %>% filter((1000*t) %in% seq(from=1,to=20000,by=100)),alpha=0.5)
+
+dn();  ggplot_bw()+geom_point(
+  data= dG %>% inner_join(y=dG2 %>% filter(slam1+slam2 ==2),by=c("method","st")) %>% 
+    filter((1000*t) %in% seq(from=1,to=20000,by=100)),
+  aes(x=t,y=g12,shape=st,colour = st,group = paste(method,st)))+geom_path()+facet_wrap(~method,scale="free_y")+
+  geom_line(mapping = aes(x=t,y=g12/(gain1*gain2)),data = df %>% filter((1000*t) %in% seq(from=1,to=20000,by=100)),alpha=0.5)
+
+dn();  ggplot_bw()+geom_point(
+  data= dG %>% inner_join(y=dG2 %>% filter(slam1+slam2 ==2),by=c("method","st")) %>% 
+    filter((1000*t) %in% seq(from=1,to=20000,by=100)),
+  aes(x=t,y=g22,shape=st,colour = st,group = paste(method,st)))+geom_path()+facet_wrap(~method,scale="free_y")+
+  geom_line(mapping = aes(x=t,y=g22/(gain2*gain2)),data = df %>% filter((1000*t) %in% seq(from=1,to=20000,by=100)),alpha=0.5)
+
+dn();  ggplot_bw()+geom_point(
+  data= dG %>% inner_join(y=dG2 %>% filter(slam1+slam2 ==2),by=c("method","st")) %>% 
+    filter((1000*t) %in% seq(from=1,to=20000,by=100)),
+  aes(x=t,y=H,shape=st,colour = st,group = paste(method,st)))+geom_path()+facet_wrap(~method,scale="free_y")+
+  geom_line(mapping = aes(x=t,y=H1),data = df %>% filter((1000*t) %in% seq(from=1,to=20000,by=100)),alpha=0.5)
+
