@@ -401,32 +401,32 @@ c_13b = res$vectors[,length(res$values)]%*%(vH1/scl) #eigen H
 eps13T = sqrt(sum((P %*% c_13)^2))
 eps13H = sqrt(sum((P %*% c_13b)^2))
 # adm = admm01_fast_m_large(A=P,Q=PT1,r=vT1,eps=sqrt(sum((P %*% c_13)^2)),max_iter = 1000,rho0 = 0.1)
-adm = admm02(A=P,Q=PT1,r=vT1,eps=eps13T,max_iter = 1000,rho0 = 0.1)
+adm = admm02(A=P,Q=PT1,r=vT1,eps=eps13T,max_iter = 2000,rho0 = 0.1)
 c_14a = adm$x #admm T
-adm = admm02(A=P,Q=PT1,r=vT1,eps=eps13T,max_iter = 1000,rho0 = 1.0)
+adm = admm02(A=P,Q=PT1,r=vT1,eps=eps13T,max_iter = 2000,rho0 = 1.0)
 c_14b = adm$x #admm T
-adm = admm02(A=P,Q=PT1,r=vT1,eps=eps13T,max_iter = 1000,rho0 = 10.0)
+adm = admm02(A=P,Q=PT1,r=vT1,eps=eps13T,max_iter = 2000,rho0 = 10.0)
 c_14c = adm$x #admm T
 
-adm2 = admm02(A=P,Q=PH1,r=vH1,eps=eps13H,max_iter = 1000,rho0 = 0.1)
+adm2 = admm02(A=P,Q=PH1,r=vH1,eps=eps13H,max_iter = 2000,rho0 = 0.1)
 c_14d = adm2$x #admm H
-adm2 = admm02(A=P,Q=PH1,r=vH1,eps=eps13H,max_iter = 1000,rho0 = 1.0)
+adm2 = admm02(A=P,Q=PH1,r=vH1,eps=eps13H,max_iter = 2000,rho0 = 1.0)
 c_14e = adm2$x #admm H
-adm2 = admm02(A=P,Q=PH1,r=vH1,eps=eps13H,max_iter = 1000,rho0 = 10.0)
+adm2 = admm02(A=P,Q=PH1,r=vH1,eps=eps13H,max_iter = 2000,rho0 = 10.0)
 c_14f = adm2$x #admm H
 
-adm3 = admm_with_psd(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 1000, rho = 0.1, rho_s = 0.1)
+adm3 = admm_with_psd(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 2000, rho = 0.1, rho_s = 0.1)
 c_15a = adm3$x #admm PSD T
-adm3 = admm_with_psd(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 1000, rho = 1.0, rho_s = 1.0)
+adm3 = admm_with_psd(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 2000, rho = 1.0, rho_s = 1.0)
 c_15b = adm3$x #admm PSD T
-adm3 = admm_with_psd(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 1000, rho = 10, rho_s = 10)
+adm3 = admm_with_psd(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 2000, rho = 10, rho_s = 10)
 c_15c = adm3$x #admm PSD T
 
-adm3 = admm_with_psd(A=P,Q=PH1,r=vH1,B_list=B_list,eps=eps13H, max_iter = 1000, rho = 0.1, rho_s = 0.1)
+adm3 = admm_with_psd(A=P,Q=PH1,r=vH1,B_list=B_list,eps=eps13H, max_iter = 2000, rho = 0.1, rho_s = 0.1)
 c_15d = adm3$x #admm PSD H
-adm3 = admm_with_psd(A=P,Q=PH1,r=vH1,B_list=B_list,eps=eps13H, max_iter = 1000, rho = 1.0, rho_s = 1.0)
+adm3 = admm_with_psd(A=P,Q=PH1,r=vH1,B_list=B_list,eps=eps13H, max_iter = 2000, rho = 1.0, rho_s = 1.0)
 c_15e = adm3$x #admm PSD H
-adm3 = admm_with_psd(A=P,Q=PH1,r=vH1,B_list=B_list,eps=eps13H, max_iter = 1000, rho = 10, rho_s = 10)
+adm3 = admm_with_psd(A=P,Q=PH1,r=vH1,B_list=B_list,eps=eps13H, max_iter = 2000, rho = 10, rho_s = 10)
 c_15f = adm3$x #admm PSD H
 
 adm3 = admm_with_psd_mode(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 1000, rho = 0.1, rho_s = 0.1, scale_mode = "transform")
@@ -444,25 +444,25 @@ adm3 = admm_with_psd_mode(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 1
 c_16f = adm3$x #admm PSD T
 
 
-adm4 = admm_with_psd_mode_l2(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 1000, rho = 0.1, rho_s = 0.1, scale_mode = "transform")
+adm4 = admm_with_psd_mode_l2(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 2000, rho = 0.1, rho_s = 0.1, scale_mode = "transform")
 c_17a = adm4$x #admm PSD T
-adm4 = admm_with_psd_mode_l2(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 1000, rho = 1.0, rho_s = 1.0, scale_mode = "transform")
+adm4 = admm_with_psd_mode_l2(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 2000, rho = 1.0, rho_s = 1.0, scale_mode = "transform")
 c_17b = adm4$x #admm PSD T
-adm4 = admm_with_psd_mode_l2(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 1000, rho = 10, rho_s = 10, scale_mode = "transform")
+adm4 = admm_with_psd_mode_l2(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 2000, rho = 10, rho_s = 10, scale_mode = "transform")
 c_17c = adm4$x #admm PSD T
 
-adm4 = admm_with_psd_mode_l2(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 1000, rho = 0.1, rho_s = 0.1, scale_mode = "normalize")
+adm4 = admm_with_psd_mode_l2(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 2000, rho = 0.1, rho_s = 0.1, scale_mode = "normalize")
 c_17d = adm4$x #admm PSD T
-adm4 = admm_with_psd_mode_l2(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 1000, rho = 1.0, rho_s = 1.0, scale_mode = "normalize")
+adm4 = admm_with_psd_mode_l2(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 2000, rho = 1.0, rho_s = 1.0, scale_mode = "normalize")
 c_17e = adm4$x #admm PSD T
-adm4 = admm_with_psd_mode_l2(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 1000, rho = 10, rho_s = 10, scale_mode = "normalize")
+adm4 = admm_with_psd_mode_l2(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 2000, rho = 10, rho_s = 10, scale_mode = "normalize")
 c_17f = adm4$x #admm PSD T
 
-adm4 = admm_with_psd_mode_l2(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 1000, rho = 0.1, rho_s = 0.1, scale_mode = "none")
+adm4 = admm_with_psd_mode_l2(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 2000, rho = 0.1, rho_s = 0.1, scale_mode = "none")
 c_17g = adm4$x #admm PSD T
-adm4 = admm_with_psd_mode_l2(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 1000, rho = 1.0, rho_s = 1.0, scale_mode = "none")
+adm4 = admm_with_psd_mode_l2(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 2000, rho = 1.0, rho_s = 1.0, scale_mode = "none")
 c_17h = adm4$x #admm PSD T
-adm4 = admm_with_psd_mode_l2(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 1000, rho = 10, rho_s = 10, scale_mode = "none")
+adm4 = admm_with_psd_mode_l2(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, max_iter = 2000, rho = 10, rho_s = 10, scale_mode = "none")
 c_17i = adm4$x #admm PSD T
 
 eta13T = sqrt(sum((PT1 %*% c_13 - vT1)^2))
@@ -472,12 +472,12 @@ eta13H = sqrt(sum((PH1 %*% c_13 - vH1)^2))
 # c_18b = solve_admm_3dB(P=P, Q=PT1, r=vT1, B_list=B2_list, eps=eps13T, eta=eta13T, scale_mode = "l2",max_iter = 2000)$x
 # c_18c = solve_admm_3dB(P=P, Q=PT1, r=vT1, B_list=B2_list, eps=eps13T, eta=eta13T, scale_mode = "maxabs",max_iter = 2000)$x
 # c_18d = solve_admm_3dB(P=P, Q=PT1, r=vT1, B_list=B2_list, eps=eps13T, eta=eta13T, scale_mode = "whiten",max_iter = 2000)$x
-c_18a = admm_with_psd_mode_02(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, scale_mode = "normalize", adapt_method = "residual")$x
-c_18b = admm_with_psd_mode_02(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, scale_mode = "transform", adapt_method = "residual")$x
-c_18c = admm_with_psd_mode_02(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, scale_mode = "none", adapt_method = "residual")$x
-c_18d = admm_with_psd_mode_02(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, scale_mode = "normalize", adapt_method = "adaptive")$x
-c_18e = admm_with_psd_mode_02(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, scale_mode = "transform", adapt_method = "adaptive")$x
-c_18f = admm_with_psd_mode_02(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T, scale_mode = "none", adapt_method = "adaptive")$x
+c_18a = admm_with_psd_mode_02(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T,max_iter = 2000, scale_mode = "normalize", adapt_method = "residual")$x
+c_18b = admm_with_psd_mode_02(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T,max_iter = 2000, scale_mode = "transform", adapt_method = "residual")$x
+c_18c = admm_with_psd_mode_02(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T,max_iter = 2000, scale_mode = "none", adapt_method = "residual")$x
+c_18d = admm_with_psd_mode_02(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T,max_iter = 2000, scale_mode = "normalize", adapt_method = "adaptive")$x
+c_18e = admm_with_psd_mode_02(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T,max_iter = 2000, scale_mode = "transform", adapt_method = "adaptive")$x
+c_18f = admm_with_psd_mode_02(A=P,Q=PT1,r=vT1,B_list=B_list,eps=eps13T,max_iter = 2000, scale_mode = "none", adapt_method = "adaptive")$x
 
 
 
@@ -591,6 +591,9 @@ for(cc in sollist){
   
   dG0 = data.frame(t = t,trG = KT%*%c_n[1:(na+nb)] ,H = KH%*%c_n[1:(na+nb)] ,
                    e1 = P[1:Tx,]%*%c_n[1:(na+nb)] , e2 = P[Tx+1:Tx,]%*%c_n[1:(na+nb)] ,
+                   ea1 = Pa[1:Tx,]%*%c_n[1:(na+nb)] , ea2 = Pa[Tx+1:Tx,]%*%c_n[1:(na+nb)] ,
+                   ev1 = Pv[1:Tx,]%*%c_n[1:(na+nb)] , ev2 = Pv[Tx+1:Tx,]%*%c_n[1:(na+nb)] ,
+                   ef1 = Pf[1:Tx,]%*%c_n[1:(na+nb)] , ef2 = Pf[Tx+1:Tx,]%*%c_n[1:(na+nb)] ,
                    lam1 = lam1, lam2=lam2,g11=g11,g12=g12,g22=g22,
                    method=method_n,st=st_n)
   
@@ -599,8 +602,10 @@ for(cc in sollist){
 
 
 dG2 = dG %>% group_by(method,st) %>% 
-  summarise(e_r=mean(sqrt(e1*e1+e2*e2))/trG[1], Hsd_r=sd(H)/trG[1], slam1=min(sign(lam1)), slam2=min(sign(lam2)) ) %>% 
-  ungroup() %>% arrange(-slam1-slam2,e_r) 
+  summarise(e_r=sqrt(mean(e1*e1+e2*e2))/trG[1], 
+            era1=sqrt(mean(e1*e1)/mean(ea1*ea1)), era2=sqrt(mean(e2*e2)/mean(ea2*ea2)),
+            Hsd_r=sd(H)/trG[1], slam1=min(sign(lam1)), slam2=min(sign(lam2)) ) %>% 
+  ungroup() %>% mutate(era=era1+era2) %>% arrange(-slam1-slam2,e_r) 
 
 print(dG2)
 dG2 %>% view()
